@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # Run with built-in cron scheduler (daemon mode)
+  porkbun-ssl:
+    build: .
+    image: porkbun-ssl:latest
+    container_name: porkbun-ssl
+    environment:
+      # Required environment variables
+      - DOMAIN=example.com,example.org
+      - API_KEY=your_porkbun_api_key
+      - SECRET_KEY=your_porkbun_secret_key
+      
+      # Required: Cron schedule - runs daily at 2 AM
+      - CRON_SCHEDULE=0 2 * * *
+      
+      # Optional environment variables
+      # - API_URL=https://api.porkbun.com/api/json/v3
+      # - CERTIFICATE_PATH=/certs/{domain}/certificate.pem
+      # - PRIVATE_KEY_PATH=/certs/{domain}/private_key.pem
+    
+    volumes:
+      # Mount local directory to persist certificates
+      - ./certs:/certs
+    
+    # Keep running as daemon
+    restart: unless-stopped
