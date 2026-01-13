@@ -9,7 +9,7 @@
                 "build",
                 "-o",
                 "porkbun-ssl.exe",
-                "app.go"
+                "."
             ],
             "group": {
                 "kind": "build",

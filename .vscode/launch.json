@@ -6,7 +6,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/app.go",
+            "program": "${workspaceFolder}",
             "envFile": "${workspaceFolder}/.env",
             "console": "integratedTerminal"
         },
@@ -15,7 +15,7 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/app.go",
+            "program": "${workspaceFolder}",
             "env": {
                 "DOMAIN": "example.com",
                 "API_KEY": "your_api_key",
