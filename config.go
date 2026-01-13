@@ -11,17 +11,17 @@ const (
 	defaultAPIURL          = "https://api.porkbun.com/api/json/v3"
 	defaultCertificatePath = "/certs/{domain}/certificate.pem"
 	defaultPrivateKeyPath  = "/certs/{domain}/private_key.pem"
-	domainPlaceholder      = "{domain}"
+	defaultCronSchedule    = "0 2 * * 1" // Every Monday at 2 AM
 )
 
 type Configuration struct {
 	Domain          string `mapstructure:"domain" validate:"required,min=1"`
 	APIKey          string `mapstructure:"api_key" validate:"required,min=1"`
 	SecretKey       string `mapstructure:"secret_key" validate:"required,min=1"`
-	APIURL          string `mapstructure:"api_url" validate:"required,min=1"`
-	CertificatePath string `mapstructure:"certificate_path" validate:"required,min=1"`
-	PrivateKeyPath  string `mapstructure:"private_key_path" validate:"required,min=1"`
-	CronSchedule    string `mapstructure:"cron_schedule" validate:"required,min=1"`
+	APIURL          string `mapstructure:"api_url"`
+	CertificatePath string `mapstructure:"certificate_path"`
+	PrivateKeyPath  string `mapstructure:"private_key_path"`
+	CronSchedule    string `mapstructure:"cron_schedule"`
 }
 
 func NewConfiguration() (*Configuration, error) {
@@ -48,6 +48,7 @@ func (c *Configuration) Bind(_ string, v *viper.Viper) {
 	v.SetDefault("api_url", defaultAPIURL)
 	v.SetDefault("certificate_path", defaultCertificatePath)
 	v.SetDefault("private_key_path", defaultPrivateKeyPath)
+	v.SetDefault("cron_schedule", defaultCronSchedule)
 
 	_ = v.BindEnv("domain", "DOMAIN")
 	_ = v.BindEnv("api_key", "API_KEY")
