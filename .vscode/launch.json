@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "envFile": "${workspaceFolder}/.env",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Launch with Custom Env",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "env": {
+                "DOMAIN": "example.com",
+                "API_KEY": "your_api_key",
+                "SECRET_KEY": "your_secret_key",
+                "CERTIFICATE_PATH": "${workspaceFolder}/certs/{domain}/certificate.pem",
+                "PRIVATE_KEY_PATH": "${workspaceFolder}/certs/{domain}/private_key.pem"
+            },
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Debug Current File",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${file}",
+            "envFile": "${workspaceFolder}/.env",
+            "console": "integratedTerminal"
+        }
+    ]
+}
