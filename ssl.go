@@ -22,6 +22,18 @@ func (a *App) processDomain() error {
 		return err
 	}
 
+	// Save combined certificate + private key if path is configured
+	if a.config.CombinedCertPath != "" {
+		combinedPath := strings.ReplaceAll(a.config.CombinedCertPath, domainPlaceholder, a.config.Domain)
+		log.Printf("[INFO] saving combined certificate to %s", combinedPath)
+		combinedContent := data.CertificateChain + "\n" + data.PrivateKey
+		if err := saveFile(combinedPath, combinedContent); err != nil {
+			return fmt.Errorf("failed to save combined certificate: %w", err)
+		}
+
+		return nil
+	}
+
 	// Save certificate
 	certPath := strings.ReplaceAll(a.config.CertificatePath, domainPlaceholder, a.config.Domain)
 	log.Printf("[INFO] saving certificate to %s", certPath)
