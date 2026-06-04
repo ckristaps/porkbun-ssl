@@ -19,7 +19,10 @@ if [ "$(id -u appuser)" != "$PUID" ]; then
     sed -i "s/appuser:x:[0-9]*:[0-9]*:/appuser:x:${PUID}:${PGID}:/" /etc/passwd
 fi
 
-# Fix ownership of app directory (not mounted volumes)
+# Fix ownership of app directory
 chown -R appuser:appuser /app
+
+# Fix ownership of certs directory (mounted volume)
+chown -R appuser:appuser /certs
 
 exec su-exec appuser /app/porkbun-ssl "$@"

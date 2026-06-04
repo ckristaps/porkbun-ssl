@@ -44,6 +44,4 @@ func (a *App) runRenewal() {
 	} else {
 		log.Printf("[INFO] SSL certificate for %s has been renewed", a.config.Domain)
 	}
-
-	log.Println("[INFO] all certificates renewed successfully")
 }
