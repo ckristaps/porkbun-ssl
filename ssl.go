@@ -2,7 +2,9 @@ package main
 
 import (
 	"bytes"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"log"
@@ -22,11 +24,36 @@ func (a *App) processDomain() error {
 		return err
 	}
 
-	// Save combined certificate + private key if path is configured
 	if a.config.CombinedCertPath != "" {
 		combinedPath := strings.ReplaceAll(a.config.CombinedCertPath, domainPlaceholder, a.config.Domain)
-		log.Printf("[INFO] saving combined certificate to %s", combinedPath)
 		combinedContent := data.CertificateChain + "\n" + data.PrivateKey
+
+		incomingCert, err := parseCertificate(data.CertificateChain)
+		if err != nil {
+			return fmt.Errorf("failed to parse incoming certificate: %w", err)
+		}
+
+		log.Printf("[INFO] incoming certificate valid from: %s, valid until: %s",
+			incomingCert.NotBefore.Format(time.RFC3339), incomingCert.NotAfter.Format(time.RFC3339))
+
+		if _, err := os.Stat(combinedPath); err == nil {
+			existingContent, err := os.ReadFile(combinedPath)
+			if err == nil {
+				existingCert, err := parseCertificate(string(existingContent))
+				if err == nil {
+					log.Printf("[INFO] existing certificate valid from: %s, valid until: %s",
+						existingCert.NotBefore.Format(time.RFC3339), existingCert.NotAfter.Format(time.RFC3339))
+
+					if !incomingCert.NotBefore.After(existingCert.NotBefore) {
+						log.Printf("[INFO] existing certificate is same or newer, skipping save")
+						return nil
+					}
+					log.Printf("[INFO] incoming certificate is newer, updating")
+				}
+			}
+		}
+
+		log.Printf("[INFO] saving combined certificate to %s", combinedPath)
 		if err := saveFile(combinedPath, combinedContent); err != nil {
 			return fmt.Errorf("failed to save combined certificate: %w", err)
 		}
@@ -34,14 +61,38 @@ func (a *App) processDomain() error {
 		return nil
 	}
 
-	// Save certificate
 	certPath := strings.ReplaceAll(a.config.CertificatePath, domainPlaceholder, a.config.Domain)
+
+	incomingCert, err := parseCertificate(data.CertificateChain)
+	if err != nil {
+		return fmt.Errorf("failed to parse incoming certificate: %w", err)
+	}
+
+	log.Printf("[INFO] incoming certificate valid from: %s, valid until: %s",
+		incomingCert.NotBefore.Format(time.RFC3339), incomingCert.NotAfter.Format(time.RFC3339))
+
+	if _, err := os.Stat(certPath); err == nil {
+		existingContent, err := os.ReadFile(certPath)
+		if err == nil {
+			existingCert, err := parseCertificate(string(existingContent))
+			if err == nil {
+				log.Printf("[INFO] existing certificate valid from: %s, valid until: %s",
+					existingCert.NotBefore.Format(time.RFC3339), existingCert.NotAfter.Format(time.RFC3339))
+
+				if !incomingCert.NotBefore.After(existingCert.NotBefore) {
+					log.Printf("[INFO] existing certificate is same or newer, skipping save")
+					return nil
+				}
+				log.Printf("[INFO] incoming certificate is newer, updating")
+			}
+		}
+	}
+
 	log.Printf("[INFO] saving certificate to %s", certPath)
 	if err := saveFile(certPath, data.CertificateChain); err != nil {
 		return fmt.Errorf("failed to save certificate: %w", err)
 	}
 
-	// Save private key
 	privKeyPath := strings.ReplaceAll(a.config.PrivateKeyPath, domainPlaceholder, a.config.Domain)
 	log.Printf("[INFO] saving private key to %s", privKeyPath)
 	if err := saveFile(privKeyPath, data.PrivateKey); err != nil {
@@ -108,4 +159,18 @@ func saveFile(path, content string) error {
 	}
 
 	return nil
+}
+
+func parseCertificate(certPEM string) (*x509.Certificate, error) {
+	block, _ := pem.Decode([]byte(certPEM))
+	if block == nil {
+		return nil, fmt.Errorf("failed to decode PEM block")
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse certificate: %w", err)
+	}
+
+	return cert, nil
 }
