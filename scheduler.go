@@ -42,6 +42,6 @@ func (a *App) runRenewal() {
 	if err := a.processDomain(); err != nil {
 		log.Printf("[ERROR] failed to process domain %s: %v", a.config.Domain, err)
 	} else {
-		log.Printf("[INFO] SSL certificate for %s has been renewed", a.config.Domain)
+		log.Printf("[INFO] SSL certificate renewal for %s has been completed", a.config.Domain)
 	}
 }
